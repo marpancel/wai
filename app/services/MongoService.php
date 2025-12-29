@@ -1,20 +1,41 @@
 <?php
 
-use MongoDB\Client;
+require_once __DIR__ . '/../../vendor/autoload.php';
 
 class MongoService
 {
-    private $collection;
+    private MongoDB\Collection $images;
+    private MongoDB\Collection $users;
 
     public function __construct()
     {
-        $client = new Client("mongodb://127.0.0.1:27017");
+        $client = new MongoDB\Client("mongodb://127.0.0.1:27017");
         $db = $client->wai;
-        $this->collection = $db->images;
+
+        $this->images = $db->images;
+        $this->users  = $db->users;
     }
 
     public function saveImage(array $data): void
     {
-        $this->collection->insertOne($data);
+        $this->images->insertOne($data);
+    }
+
+
+    public function findUserByLogin(string $login)
+    {
+        return $this->users->findOne(['login' => $login]);
+    }
+
+    public function saveUser(array $data): void
+    {
+        $this->users->insertOne($data);
+    }
+
+    public function getUserById(string $id)
+    {
+        return $this->users->findOne([
+            '_id' => new MongoDB\BSON\ObjectId($id)
+        ]);
     }
 }

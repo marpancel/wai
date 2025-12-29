@@ -1,3 +1,13 @@
+<?php if ($user): ?>
+    <div style="margin-bottom:20px;">
+        <strong>Zalogowany jako:</strong> <?= htmlspecialchars($user['login']) ?><br>
+        <img src="/profiles/<?= htmlspecialchars($user['profile_photo']) ?>" width="80">
+        <br>
+        <a href="/?route=logout">Wyloguj</a>
+    </div>
+<?php else: ?>
+    <a href="/?route=login">Zaloguj się</a>
+<?php endif; ?>
 <!DOCTYPE html>
 <html lang="pl">
 <head>
