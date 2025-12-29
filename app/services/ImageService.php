@@ -1,5 +1,7 @@
 <?php
 
+require_once __DIR__ . '/MongoService.php';
+
 class ImageService
 {
     private string $projectRoot;
@@ -42,6 +44,14 @@ class ImageService
             $this->thumbDir . $filename
         );
 
+        // ✅ CAT II a — zapis do MongoDB
+        $mongo = new MongoService();
+        $mongo->saveImage([
+            'filename' => $filename,
+            'uploaded_at' => new MongoDB\BSON\UTCDateTime(),
+            'public' => true
+        ]);
+
         return true;
     }
 
@@ -81,7 +91,5 @@ class ImageService
         } else {
             imagepng($thumb, $destPath);
         }
-
-        
     }
 }
