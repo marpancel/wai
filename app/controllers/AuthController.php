@@ -8,6 +8,7 @@ class AuthController
 {
     public function register()
     {
+        file_put_contents('/tmp/register_debug.txt', print_r($_FILES, true));
         $error = null;
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
