@@ -50,4 +50,39 @@ class AuthController
 
         require __DIR__ . '/../views/register.php';
     }
+    public function login()
+    {
+        $error = null;
+
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $login = trim($_POST['login']);
+            $password = $_POST['password'];
+
+            if (!$login || !$password) {
+                $error = 'Wszystkie pola są wymagane';
+            } else {
+                $mongo = new MongoService();
+                $user = $mongo->findUserByLogin($login);
+
+                if (!$user || !password_verify($password, $user['password'])) {
+                    $error = 'Nieprawidłowy login lub hasło';
+                } else {
+                    // ✅ SESJA
+                    $_SESSION['user_id'] = (string)$user['_id'];
+
+                    header('Location: /?route=gallery');
+                    exit;
+                }
+            }
+        }
+
+        require __DIR__ . '/../views/login.php';
+    }
+
+    public function logout()
+    {
+        session_destroy();
+        header('Location: /?route=login');
+        exit;
+    }
 }
