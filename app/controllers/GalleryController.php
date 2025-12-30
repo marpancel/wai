@@ -1,11 +1,18 @@
 <?php
 
 require_once __DIR__ . '/../services/ImageService.php';
+require_once __DIR__ . '/../services/MongoService.php';
 
 class GalleryController
 {
     public function index()
     {
+        $mongo = new MongoService();
+        $user = null;
+
+        if (isset($_SESSION['user_id'])) {
+            $user = $mongo->getUserById($_SESSION['user_id']);
+        }
         $error = null;
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['image'])) {
