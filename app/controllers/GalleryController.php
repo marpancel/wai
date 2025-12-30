@@ -7,12 +7,18 @@ class GalleryController
 {
     public function index()
     {
+        if (!isset($_SESSION['user_id'])) {
+            header('Location: /?route=login');
+            exit;
+        }
+
         $mongo = new MongoService();
         $user = null;
 
         if (isset($_SESSION['user_id'])) {
             $user = $mongo->getUserById($_SESSION['user_id']);
         }
+
         $error = null;
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['image'])) {
@@ -28,15 +34,20 @@ class GalleryController
         $page = isset($_GET['page']) ? max(1, (int)$_GET['page']) : 1;
         $offset = ($page - 1) * $perPage;
 
-        $thumbsDir = realpath(__DIR__ . '/../../public/thumbs');
+        $thumbsDir = __DIR__ . '/../../public/thumbs';
+        $files = [];
 
-        $files = array_values(array_filter(
-            scandir($thumbsDir),
-            fn($f) => preg_match('/\.(jpg|jpeg|png)$/i', $f)
-        ));
+        if (is_dir($thumbsDir)) {
+            $files = array_values(array_filter(
+                scandir($thumbsDir),
+                fn($f) => preg_match('/\.(jpg|jpeg|png)$/i', $f)
+            ));
+
+            rsort($files);
+        }
 
         $total = count($files);
-        $pages = ceil($total / $perPage);
+        $pages = max(1, ceil($total / $perPage));
         $files = array_slice($files, $offset, $perPage);
 
         require __DIR__ . '/../views/gallery.php';

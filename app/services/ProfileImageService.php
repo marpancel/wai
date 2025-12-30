@@ -6,20 +6,29 @@ class ProfileImageService
 
     public function __construct()
     {
-        $this->dir = realpath(__DIR__ . '/../../public/profiles/');
+        $this->dir = __DIR__ . '/../../public/profiles';
+
+        if (!is_dir($this->dir)) {
+            mkdir($this->dir, 0755, true);
+        }
     }
 
     public function process($file): ?string
     {
-        if ($file['error'] !== UPLOAD_ERR_OK) return null;
+        if ($file['error'] !== UPLOAD_ERR_OK) {
+            return null;
+        }
 
         $info = getimagesize($file['tmp_name']);
-        if (!$info) return null;
+        if (!$info) {
+            return null;
+        }
 
-        $mime = $info['mime'];
-        if (!in_array($mime, ['image/jpeg', 'image/png'])) return null;
+        if (!in_array($info['mime'], ['image/jpeg', 'image/png'])) {
+            return null;
+        }
 
-        $src = $mime === 'image/jpeg'
+        $src = $info['mime'] === 'image/jpeg'
             ? imagecreatefromjpeg($file['tmp_name'])
             : imagecreatefrompng($file['tmp_name']);
 
@@ -35,7 +44,12 @@ class ProfileImageService
         );
 
         $filename = uniqid('profile_') . '.jpg';
-        imagejpeg($thumb, $this->dir . '/' . $filename);
+        $path = $this->dir . '/' . $filename;
+
+        imagejpeg($thumb, $path);
+
+        imagedestroy($src);
+        imagedestroy($thumb);
 
         return $filename;
     }
