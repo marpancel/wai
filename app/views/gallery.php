@@ -1,13 +1,3 @@
-<?php if ($user): ?>
-    <div style="margin-bottom:20px;">
-        <strong>Zalogowany jako:</strong> <?= htmlspecialchars($user['login']) ?><br>
-        <img src="/profiles/<?= htmlspecialchars($user['profile_photo']) ?>" width="80">
-        <br>
-        <a href="/?route=logout">Wyloguj</a>
-    </div>
-<?php else: ?>
-    <a href="/?route=login">Zaloguj się</a>
-<?php endif; ?>
 <!DOCTYPE html>
 <html lang="pl">
 <head>
@@ -15,7 +5,7 @@
     <title>Galeria zdjęć</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <!-- Tailwind CSS – tylko stylowanie -->
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
 
     <style>
@@ -25,7 +15,6 @@
 
 <body class="bg-slate-100 min-h-screen text-slate-800">
 
-<!-- Layout -->
 <div class="max-w-6xl mx-auto px-6 py-10">
 
     <!-- Header -->
@@ -38,7 +27,34 @@
         </p>
     </header>
 
-    <!-- Upload -->
+    <!-- Status logowania -->
+    <div class="mb-8 text-center">
+        <?php if ($user): ?>
+            <div class="inline-block bg-white border rounded-xl px-6 py-4 shadow-sm">
+                <strong>Zalogowany jako:</strong>
+                <?= htmlspecialchars($user['login']) ?><br>
+                <img
+                    src="/profiles/<?= htmlspecialchars($user['profile_photo']) ?>"
+                    width="80"
+                    class="mx-auto mt-2 rounded-full border"
+                >
+                <div class="mt-2">
+                    <a href="/?route=logout"
+                       class="text-sm text-red-600 hover:underline">
+                        Wyloguj
+                    </a>
+                </div>
+            </div>
+        <?php else: ?>
+            <a href="/?route=login"
+               class="inline-block px-6 py-2 rounded-lg bg-blue-600 text-white font-semibold hover:bg-blue-700 transition">
+                Zaloguj się
+            </a>
+        <?php endif; ?>
+    </div>
+
+    <!-- Upload (tylko dla zalogowanych) -->
+    <?php if ($user): ?>
     <section class="bg-white rounded-2xl shadow-sm border p-6 mb-10">
         <h2 class="text-xl font-semibold mb-4">
             Dodaj nowe zdjęcie
@@ -73,12 +89,12 @@
             <button
                 type="submit"
                 class="px-6 py-2 rounded-lg bg-blue-600 text-white font-semibold
-                       hover:bg-blue-700 transition shadow-sm"
-            >
+                       hover:bg-blue-700 transition shadow-sm">
                 Wyślij
             </button>
         </form>
     </section>
+    <?php endif; ?>
 
     <!-- Galeria -->
     <section class="bg-white rounded-2xl shadow-sm border p-6">
@@ -94,13 +110,13 @@
 
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 <?php foreach ($files as $file): ?>
-                    <a href="/images/<?= $file ?>" target="_blank"
+                    <a href="/images/<?= htmlspecialchars($file) ?>" target="_blank"
                        class="group block rounded-xl overflow-hidden border bg-slate-50
                               hover:shadow-md transition">
 
                         <div class="aspect-[16/10] overflow-hidden">
                             <img
-                                src="/thumbs/<?= $file ?>"
+                                src="/thumbs/<?= htmlspecialchars($file) ?>"
                                 alt="Miniatura"
                                 class="w-full h-full object-cover
                                        group-hover:scale-105 transition-transform duration-300"
