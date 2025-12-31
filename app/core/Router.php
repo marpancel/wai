@@ -27,6 +27,10 @@ class Router
                 require_once __DIR__ . '/../controllers/AuthController.php';
                 (new AuthController())->logout();
                 break;
+            case 'saved':
+                require_once __DIR__ . '/../controllers/SavedController.php';
+                (new SavedController())->index();
+                break;
 
             default:
                 http_response_code(404);

@@ -7,10 +7,6 @@
 
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-
-    <style>
-        img { image-rendering: auto; }
-    </style>
 </head>
 
 <body class="bg-slate-100 min-h-screen text-slate-800">
@@ -22,9 +18,6 @@
         <h1 class="text-4xl font-bold tracking-tight mb-2">
             Galeria zdjęć
         </h1>
-        <p class="text-slate-500">
-            Marcel Panc s208336
-        </p>
     </header>
 
     <!-- Status logowania -->
@@ -33,11 +26,15 @@
             <div class="inline-block bg-white border rounded-xl px-6 py-4 shadow-sm">
                 <strong>Zalogowany jako:</strong>
                 <?= htmlspecialchars($user['login']) ?><br>
-                <img
-                    src="/profiles/<?= htmlspecialchars($user['profile_photo']) ?>"
-                    width="80"
-                    class="mx-auto mt-2 rounded-full border"
-                >
+
+                <?php if (!empty($user['profile_photo'])): ?>
+                    <img
+                        src="/profiles/<?= htmlspecialchars($user['profile_photo']) ?>"
+                        width="80"
+                        class="mx-auto mt-2 rounded-full border"
+                    >
+                <?php endif; ?>
+
                 <div class="mt-2">
                     <a href="/?route=logout"
                        class="text-sm text-red-600 hover:underline">
@@ -53,7 +50,7 @@
         <?php endif; ?>
     </div>
 
-    <!-- Upload (tylko dla zalogowanych) -->
+    <!-- Upload zdjęcia -->
     <?php if ($user): ?>
     <section class="bg-white rounded-2xl shadow-sm border p-6 mb-10">
         <h2 class="text-xl font-semibold mb-4">
@@ -96,42 +93,63 @@
     </section>
     <?php endif; ?>
 
-    <!-- Galeria -->
-    <section class="bg-white rounded-2xl shadow-sm border p-6">
-        <h2 class="text-xl font-semibold mb-6">
-            Galeria
-        </h2>
+    <!-- GALERIA + CHECKBOXY -->
+    <form method="post">
+        <section class="bg-white rounded-2xl shadow-sm border p-6">
+            <h2 class="text-xl font-semibold mb-6">
+                Galeria
+            </h2>
 
-        <?php if (empty($files)): ?>
-            <p class="text-slate-500">
-                Brak zdjęć w galerii.
-            </p>
-        <?php else: ?>
+            <?php if (empty($files)): ?>
+                <p class="text-slate-500">
+                    Brak zdjęć w galerii.
+                </p>
+            <?php else: ?>
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                <?php foreach ($files as $file): ?>
-                    <a href="/images/<?= htmlspecialchars($file) ?>" target="_blank"
-                       class="group block rounded-xl overflow-hidden border bg-slate-50
-                              hover:shadow-md transition">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <?php foreach ($files as $file): ?>
+                        <div class="border rounded-xl p-3 bg-white shadow-sm">
 
-                        <div class="aspect-[16/10] overflow-hidden">
                             <img
                                 src="/thumbs/<?= htmlspecialchars($file) ?>"
-                                alt="Miniatura"
-                                class="w-full h-full object-cover
-                                       group-hover:scale-105 transition-transform duration-300"
+                                class="w-full h-40 object-cover rounded-lg mb-3"
                             >
-                        </div>
 
-                        <div class="px-3 py-2 text-sm text-slate-600 truncate">
-                            <?= htmlspecialchars($file) ?>
-                        </div>
-                    </a>
-                <?php endforeach; ?>
-            </div>
+                            <div class="flex items-center justify-between text-sm">
 
-        <?php endif; ?>
-    </section>
+                                <label class="flex items-center gap-2">
+                                    <input
+                                        type="checkbox"
+                                        name="images[<?= htmlspecialchars($file) ?>][checked]"
+                                    >
+                                    Zapamiętaj
+                                </label>
+
+                                <input
+                                    type="number"
+                                    name="images[<?= htmlspecialchars($file) ?>][qty]"
+                                    value="1"
+                                    min="1"
+                                    class="w-16 border rounded px-2 py-1 text-center"
+                                >
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+
+                <div class="mt-6 text-center">
+                    <button
+                        type="submit"
+                        name="save_selected"
+                        class="px-6 py-2 rounded-lg bg-blue-600 text-white font-semibold hover:bg-blue-700 transition"
+                    >
+                        Zapamiętaj wybrane
+                    </button>
+                </div>
+
+            <?php endif; ?>
+        </section>
+    </form>
 
     <!-- Paginacja -->
     <?php if ($pages > 1): ?>
@@ -147,11 +165,6 @@
             <?php endfor; ?>
         </nav>
     <?php endif; ?>
-
-    <!-- Footer -->
-    <footer class="mt-16 text-center text-sm text-slate-400">
-        :)
-    </footer>
 
 </div>
 

@@ -13,10 +13,10 @@ class GalleryController
         }
 
         $mongo = new MongoService();
-        $user = null;
+        $user = $mongo->getUserById($_SESSION['user_id']);
 
-        if (isset($_SESSION['user_id'])) {
-            $user = $mongo->getUserById($_SESSION['user_id']);
+        if (!isset($_SESSION['saved'])) {
+            $_SESSION['saved'] = [];
         }
 
         $error = null;
@@ -27,6 +27,12 @@ class GalleryController
 
             if ($result !== true) {
                 $error = $result;
+            }
+        }
+
+        if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save'])) {
+            foreach ($_POST['save'] as $filename => $qty) {
+                $_SESSION['saved'][$filename] = max(1, (int)$qty);
             }
         }
 
@@ -42,7 +48,6 @@ class GalleryController
                 scandir($thumbsDir),
                 fn($f) => preg_match('/\.(jpg|jpeg|png)$/i', $f)
             ));
-
             rsort($files);
         }
 
