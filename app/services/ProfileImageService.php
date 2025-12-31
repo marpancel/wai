@@ -46,7 +46,9 @@ class ProfileImageService
         $filename = uniqid('profile_') . '.jpg';
         $path = $this->dir . '/' . $filename;
 
-        imagejpeg($thumb, $path);
+        if (!imagejpeg($thumb, $path)) {
+            file_put_contents('/tmp/profile_error.txt', 'imagejpeg failed');
+        }
 
         imagedestroy($src);
         imagedestroy($thumb);
