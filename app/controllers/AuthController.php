@@ -8,16 +8,18 @@ class AuthController
 {
     public function register()
     {
-        file_put_contents('/tmp/register_debug.txt', print_r($_FILES, true));
         $error = null;
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $email = trim($_POST['email']);
-            $login = trim($_POST['login']);
-            $pass1 = $_POST['password'];
-            $pass2 = $_POST['password2'];
 
-            if ($pass1 !== $pass2) {
+            $email = trim($_POST['email'] ?? '');
+            $login = trim($_POST['login'] ?? '');
+            $pass1 = $_POST['password'] ?? '';
+            $pass2 = $_POST['password2'] ?? '';
+
+            if (!$email || !$login || !$pass1 || !$pass2) {
+                $error = 'Wszystkie pola są wymagane';
+            } elseif ($pass1 !== $pass2) {
                 $error = 'Hasła nie są takie same';
             } else {
                 $mongo = new MongoService();
@@ -29,18 +31,16 @@ class AuthController
                     $photo = $imgService->process($_FILES['profile_photo']);
 
                     if (!$photo) {
-                        $error = 'Błąd zdjęcia profilowego';
+                        $error = 'Nie udało się zapisać zdjęcia profilowego';
                     } else {
                         $hash = password_hash($pass1, PASSWORD_DEFAULT);
 
-                        $user = new User(
-                            $email,
-                            $login,
-                            $hash,
-                            $photo
-                        );
-
-                        $mongo->saveUser($user->toArray());
+                        $mongo->saveUser([
+                            'email' => $email,
+                            'login' => $login,
+                            'password' => $hash,
+                            'profile_photo' => $photo
+                        ]);
 
                         header('Location: /?route=login');
                         exit;
@@ -51,6 +51,7 @@ class AuthController
 
         require __DIR__ . '/../views/register.php';
     }
+
     public function login()
     {
         $error = null;
@@ -59,21 +60,15 @@ class AuthController
             $login = trim($_POST['login']);
             $password = $_POST['password'];
 
-            if (!$login || !$password) {
-                $error = 'Wszystkie pola są wymagane';
+            $mongo = new MongoService();
+            $user = $mongo->findUserByLogin($login);
+
+            if (!$user || !password_verify($password, $user['password'])) {
+                $error = 'Nieprawidłowy login lub hasło';
             } else {
-                $mongo = new MongoService();
-                $user = $mongo->findUserByLogin($login);
-
-                if (!$user || !password_verify($password, $user['password'])) {
-                    $error = 'Nieprawidłowy login lub hasło';
-                } else {
-                    // ✅ SESJA
-                    $_SESSION['user_id'] = (string)$user['_id'];
-
-                    header('Location: /?route=gallery');
-                    exit;
-                }
+                $_SESSION['user_id'] = (string)$user['_id'];
+                header('Location: /?route=gallery');
+                exit;
             }
         }
 

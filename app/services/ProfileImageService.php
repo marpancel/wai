@@ -13,9 +13,10 @@ class ProfileImageService
         }
     }
 
-    public function process($file): ?string
+    public function process(array $file): ?string
     {
-        if ($file['error'] !== UPLOAD_ERR_OK) {
+        // brak pliku
+        if (!isset($file['tmp_name']) || $file['error'] !== UPLOAD_ERR_OK) {
             return null;
         }
 
@@ -28,10 +29,16 @@ class ProfileImageService
             return null;
         }
 
+        // źródło
         $src = $info['mime'] === 'image/jpeg'
             ? imagecreatefromjpeg($file['tmp_name'])
             : imagecreatefrompng($file['tmp_name']);
 
+        if (!$src) {
+            return null;
+        }
+
+        // miniatura 150x150
         $thumb = imagecreatetruecolor(150, 150);
 
         imagecopyresampled(
@@ -46,9 +53,7 @@ class ProfileImageService
         $filename = uniqid('profile_') . '.jpg';
         $path = $this->dir . '/' . $filename;
 
-        if (!imagejpeg($thumb, $path)) {
-            file_put_contents('/tmp/profile_error.txt', 'imagejpeg failed');
-        }
+        imagejpeg($thumb, $path, 90);
 
         imagedestroy($src);
         imagedestroy($thumb);
