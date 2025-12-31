@@ -5,7 +5,6 @@
     <title>Galeria zdjęć</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 
@@ -18,9 +17,10 @@
         <h1 class="text-4xl font-bold tracking-tight mb-2">
             Galeria zdjęć
         </h1>
+        <?php require __DIR__ . '/partials/cart.php'; ?>
     </header>
 
-    <!-- Status logowania -->
+    <!-- Status użytkownika + koszyk -->
     <div class="mb-8 text-center">
         <?php if ($user): ?>
             <div class="inline-block bg-white border rounded-xl px-6 py-4 shadow-sm">
@@ -35,23 +35,19 @@
                     >
                 <?php endif; ?>
 
-                <div class="mt-2">
-                    <a href="/?route=logout"
-                       class="text-sm text-red-600 hover:underline">
+                <div class="mt-2 flex justify-center gap-4 text-sm">
+                    <a href="/?route=saved" class="text-blue-600 hover:underline">
+                        Zapamiętane (<?= count($_SESSION['saved'] ?? []) ?>)
+                    </a>
+                    <a href="/?route=logout" class="text-red-600 hover:underline">
                         Wyloguj
                     </a>
                 </div>
             </div>
-        <?php else: ?>
-            <a href="/?route=login"
-               class="inline-block px-6 py-2 rounded-lg bg-blue-600 text-white font-semibold hover:bg-blue-700 transition">
-                Zaloguj się
-            </a>
         <?php endif; ?>
     </div>
 
     <!-- Upload zdjęcia -->
-    <?php if ($user): ?>
     <section class="bg-white rounded-2xl shadow-sm border p-6 mb-10">
         <h2 class="text-xl font-semibold mb-4">
             Dodaj nowe zdjęcie
@@ -74,26 +70,22 @@
                     type="file"
                     name="image"
                     required
-                    class="block w-full text-sm text-slate-700
+                    class="block w-full text-sm
                            file:mr-4 file:py-2 file:px-4
                            file:rounded-lg file:border-0
-                           file:text-sm file:font-semibold
-                           file:bg-slate-200 file:text-slate-800
-                           hover:file:bg-slate-300"
+                           file:bg-slate-200 hover:file:bg-slate-300"
                 >
             </div>
 
             <button
                 type="submit"
-                class="px-6 py-2 rounded-lg bg-blue-600 text-white font-semibold
-                       hover:bg-blue-700 transition shadow-sm">
+                class="px-6 py-2 rounded-lg bg-green-600 text-white font-semibold hover:bg-green-700 transition">
                 Wyślij
             </button>
         </form>
     </section>
-    <?php endif; ?>
 
-    <!-- GALERIA + CHECKBOXY -->
+    <!-- GALERIA + SESJA (CAT 2C) -->
     <form method="post">
         <section class="bg-white rounded-2xl shadow-sm border p-6">
             <h2 class="text-xl font-semibold mb-6">
@@ -115,12 +107,16 @@
                                 class="w-full h-40 object-cover rounded-lg mb-3"
                             >
 
-                            <div class="flex items-center justify-between text-sm">
+                            <div class="text-sm truncate mb-2">
+                                <?= htmlspecialchars($file) ?>
+                            </div>
 
+                            <div class="flex items-center justify-between text-sm gap-2">
                                 <label class="flex items-center gap-2">
                                     <input
                                         type="checkbox"
                                         name="images[<?= htmlspecialchars($file) ?>][checked]"
+                                        <?= isset($_SESSION['saved'][$file]) ? 'checked' : '' ?>
                                     >
                                     Zapamiętaj
                                 </label>
@@ -128,7 +124,7 @@
                                 <input
                                     type="number"
                                     name="images[<?= htmlspecialchars($file) ?>][qty]"
-                                    value="1"
+                                    value="<?= $_SESSION['saved'][$file] ?? 1 ?>"
                                     min="1"
                                     class="w-16 border rounded px-2 py-1 text-center"
                                 >

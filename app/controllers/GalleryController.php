@@ -15,8 +15,8 @@ class GalleryController
         $mongo = new MongoService();
         $user = $mongo->getUserById($_SESSION['user_id']);
 
-        if (!isset($_SESSION['saved'])) {
-            $_SESSION['saved'] = [];
+        if (!isset($_SESSION['saved_images'])) {
+            $_SESSION['saved_images'] = [];
         }
 
         $error = null;
@@ -30,9 +30,18 @@ class GalleryController
             }
         }
 
-        if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save'])) {
-            foreach ($_POST['save'] as $filename => $qty) {
-                $_SESSION['saved'][$filename] = max(1, (int)$qty);
+        if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_selected'])) {
+
+            $_SESSION['saved_images'] = [];
+
+            if (!empty($_POST['images'])) {
+                foreach ($_POST['images'] as $filename => $data) {
+                    if (isset($data['checked'])) {
+                        $_SESSION['saved_images'][$filename] = [
+                            'qty' => max(1, (int)($data['qty'] ?? 1))
+                        ];
+                    }
+                }
             }
         }
 
@@ -54,6 +63,8 @@ class GalleryController
         $total = count($files);
         $pages = max(1, ceil($total / $perPage));
         $files = array_slice($files, $offset, $perPage);
+
+        $savedImages = $_SESSION['saved_images'];
 
         require __DIR__ . '/../views/gallery.php';
     }

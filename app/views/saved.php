@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <title>Zapamiętane zdjęcia</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 
@@ -13,61 +12,53 @@
 <div class="max-w-5xl mx-auto px-6 py-10">
 
     <header class="mb-10 text-center">
-        <h1 class="text-3xl font-bold">
-            Zapamiętane zdjęcia
-        </h1>
-        <a href="/?route=gallery"
-           class="text-blue-600 hover:underline text-sm">
+        <h1 class="text-4xl font-bold mb-2">Zapamiętane zdjęcia</h1>
+        <a href="/?route=gallery" class="text-blue-600 hover:underline">
             ← Wróć do galerii
         </a>
     </header>
 
-    <?php if (empty($saved)): ?>
+    <?php if (empty($savedImages)): ?>
         <p class="text-center text-slate-500">
             Brak zapamiętanych zdjęć.
         </p>
     <?php else: ?>
 
-        <form method="post" class="space-y-4">
+    <form method="post">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
 
-            <?php foreach ($saved as $file => $qty): ?>
-                <div class="flex items-center gap-4 bg-white border rounded-xl p-4 shadow-sm">
+            <?php foreach ($savedImages as $file => $data): ?>
+                <div class="bg-white border rounded-xl p-4 shadow-sm">
 
                     <img
                         src="/thumbs/<?= htmlspecialchars($file) ?>"
-                        class="w-32 h-20 object-cover rounded-lg border"
+                        class="w-full h-40 object-cover rounded-lg mb-3"
                     >
 
-                    <div class="flex-1">
-                        <div class="font-medium">
-                            <?= htmlspecialchars($file) ?>
-                        </div>
-                        <div class="text-sm text-slate-500">
-                            Ilość: <?= (int)$qty ?>
-                        </div>
+                    <div class="flex justify-between items-center text-sm">
+                        <label class="flex items-center gap-2">
+                            <input type="checkbox" name="remove[<?= htmlspecialchars($file) ?>]">
+                            Usuń
+                        </label>
+
+                        <span class="text-slate-600">
+                            Ilość: <strong><?= (int)$data['qty'] ?></strong>
+                        </span>
                     </div>
-
-                    <button
-                        type="submit"
-                        name="remove"
-                        value="<?= htmlspecialchars($file) ?>"
-                        class="px-4 py-2 rounded-lg bg-red-600 text-white text-sm hover:bg-red-700">
-                        Usuń
-                    </button>
-
                 </div>
             <?php endforeach; ?>
 
-            <div class="text-center pt-6">
-                <button
-                    type="submit"
-                    name="clear_all"
-                    class="px-6 py-2 rounded-lg bg-gray-700 text-white hover:bg-gray-800">
-                    Wyczyść wszystko
-                </button>
-            </div>
+        </div>
 
-        </form>
+        <div class="mt-8 text-center">
+            <button
+                type="submit"
+                class="px-6 py-2 rounded-lg bg-red-600 text-white font-semibold
+                       hover:bg-red-700 transition">
+                Usuń zaznaczone z zapamiętanych
+            </button>
+        </div>
+    </form>
 
     <?php endif; ?>
 
