@@ -1,7 +1,5 @@
 <?php
 
-require_once __DIR__ . '/../services/MongoService.php';
-
 class SavedController
 {
     public function index()
@@ -15,10 +13,13 @@ class SavedController
             $_SESSION['saved_images'] = [];
         }
 
-        if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['remove'])) {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['remove']) && is_array($_POST['remove'])) {
             foreach ($_POST['remove'] as $filename => $_) {
                 unset($_SESSION['saved_images'][$filename]);
             }
+
+            header('Location: /?route=saved');
+            exit;
         }
 
         $savedImages = $_SESSION['saved_images'];

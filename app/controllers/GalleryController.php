@@ -5,7 +5,7 @@ require_once __DIR__ . '/../services/MongoService.php';
 
 class GalleryController
 {
-    public function index()
+    public function index(): void
     {
         if (!isset($_SESSION['user_id'])) {
             header('Location: /?route=login');
@@ -13,7 +13,7 @@ class GalleryController
         }
 
         $mongo = new MongoService();
-        $user = $mongo->getUserById($_SESSION['user_id']);
+        $user  = $mongo->getUserById($_SESSION['user_id']);
 
         if (!isset($_SESSION['saved_images'])) {
             $_SESSION['saved_images'] = [];
@@ -21,9 +21,9 @@ class GalleryController
 
         $error = null;
 
-        if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['image'])) {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['upload'])) {
             $service = new ImageService();
-            $result = $service->upload($_FILES['image']);
+            $result  = $service->upload($_FILES['image']);
 
             if ($result !== true) {
                 $error = $result;
@@ -32,12 +32,16 @@ class GalleryController
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_selected'])) {
 
+            // celowo nadpisujemy – wymaganie z zadania
             $_SESSION['saved_images'] = [];
 
             if (!empty($_POST['images'])) {
                 foreach ($_POST['images'] as $filename => $data) {
+
                     if (isset($data['checked'])) {
-                        $_SESSION['saved_images'][$filename] = [
+                        $safeName = basename($filename);
+
+                        $_SESSION['saved_images'][$safeName] = [
                             'qty' => max(1, (int)($data['qty'] ?? 1))
                         ];
                     }
@@ -46,7 +50,7 @@ class GalleryController
         }
 
         $perPage = 6;
-        $page = isset($_GET['page']) ? max(1, (int)$_GET['page']) : 1;
+        $page    = max(1, (int)($_GET['page'] ?? 1));
         $offset = ($page - 1) * $perPage;
 
         $thumbsDir = __DIR__ . '/../../public/thumbs';

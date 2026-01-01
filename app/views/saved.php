@@ -23,43 +23,43 @@
             Brak zapamiętanych zdjęć.
         </p>
     <?php else: ?>
+        <form method="post">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
 
-    <form method="post">
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                <?php foreach ($savedImages as $file => $data): ?>
+                    <div class="bg-white border rounded-xl p-4 shadow-sm">
 
-            <?php foreach ($savedImages as $file => $data): ?>
-                <div class="bg-white border rounded-xl p-4 shadow-sm">
+                        <img
+                            src="/thumbs/<?= htmlspecialchars($file) ?>"
+                            class="w-full h-40 object-cover rounded-lg mb-3"
+                        >
 
-                    <img
-                        src="/thumbs/<?= htmlspecialchars($file) ?>"
-                        class="w-full h-40 object-cover rounded-lg mb-3"
-                    >
+                        <div class="flex justify-between items-center text-sm">
+                            <label class="flex items-center gap-2">
+                                <input type="checkbox" name="remove[<?= htmlspecialchars($file) ?>]">
+                                Usuń
+                            </label>
 
-                    <div class="flex justify-between items-center text-sm">
-                        <label class="flex items-center gap-2">
-                            <input type="checkbox" name="remove[<?= htmlspecialchars($file) ?>]">
-                            Usuń
-                        </label>
-
-                        <span class="text-slate-600">
-                            Ilość: <strong><?= (int)$data['qty'] ?></strong>
-                        </span>
+                            <span class="text-slate-600">
+                                Ilość: <strong><?= (int)$data['qty'] ?></strong>
+                            </span>
+                        </div>
                     </div>
-                </div>
-            <?php endforeach; ?>
+                <?php endforeach; ?>
 
-        </div>
+            </div>
 
-        <div class="mt-8 text-center">
-            <button
-                type="submit"
-                class="px-6 py-2 rounded-lg bg-red-600 text-white font-semibold
-                       hover:bg-red-700 transition">
-                Usuń zaznaczone z zapamiętanych
-            </button>
-        </div>
-    </form>
-
+            <div class="mt-8 text-center">
+                <button
+                    type="submit"
+                    class="px-6 py-2 rounded-lg bg-red-600 text-white font-semibold
+                        hover:bg-red-700 transition"
+                    onclick="return confirm('Usunąć zaznaczone zdjęcia?')"
+                >
+                    Usuń zaznaczone z zapamiętanych
+                </button>
+            </div>
+        </form>
     <?php endif; ?>
 
 </div>
