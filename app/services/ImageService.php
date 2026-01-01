@@ -5,54 +5,37 @@ require_once __DIR__ . '/MongoService.php';
 
 class ImageService
 {
-    private string $projectRoot;
     private string $uploadDir;
     private string $thumbDir;
 
     private array $allowedMime = ['image/jpeg', 'image/png'];
-    private int $maxSize = 1_000_000; // 1 MB – ZGODNIE Z WYTYCZNYMI
+    private int $maxSize = 1_000_000; // 1 MB
 
     public function __construct()
     {
-        $this->projectRoot = realpath(__DIR__ . '/../../');
-        $this->uploadDir = $this->projectRoot . '/public/images/';
-        $this->thumbDir  = $this->projectRoot . '/public/thumbs/';
-
-        if (!is_dir($this->uploadDir) || !is_writable($this->uploadDir)) {
-            throw new RuntimeException('Katalog images nie istnieje lub brak uprawnień');
-        }
-
-        if (!is_dir($this->thumbDir) || !is_writable($this->thumbDir)) {
-            throw new RuntimeException('Katalog thumbs nie istnieje lub brak uprawnień');
-        }
+        $root = realpath(__DIR__ . '/../../');
+        $this->uploadDir = $root . '/public/images/';
+        $this->thumbDir  = $root . '/public/thumbs/';
     }
 
-    public function upload(array $file, array $post)
+    
+    public function upload(array $file, array $user, string $title): bool|string
     {
+        if (trim($title) === '') {
+            return 'Tytuł zdjęcia jest wymagany';
+        }
+
         if ($file['error'] !== UPLOAD_ERR_OK) {
             return 'Błąd uploadu pliku';
         }
 
-        $errors = [];
-
         if ($file['size'] > $this->maxSize) {
-            $errors[] = 'Plik jest za duży (max 1 MB)';
+            return 'Plik jest za duży (max 1 MB)';
         }
 
-        $info = @getimagesize($file['tmp_name']);
+        $info = getimagesize($file['tmp_name']);
         if (!$info || !in_array($info['mime'], $this->allowedMime, true)) {
-            $errors[] = 'Nieprawidłowy format pliku (dozwolone: JPG, PNG)';
-        }
-
-        $title  = trim($post['title']  ?? '');
-        $author = trim($post['author'] ?? '');
-
-        if ($title === '' || $author === '') {
-            $errors[] = 'Tytuł i autor są wymagane';
-        }
-
-        if (!empty($errors)) {
-            return implode(' | ', $errors);
+            return 'Nieprawidłowy format (JPG / PNG)';
         }
 
         $ext = $info['mime'] === 'image/png' ? 'png' : 'jpg';
@@ -64,29 +47,29 @@ class ImageService
 
         $this->createThumbnail(
             $this->uploadDir . $filename,
-            $this->thumbDir . $filename
+            $this->thumbDir . $filename,
+            $info['mime']
         );
 
         $mongo = new MongoService();
         $mongo->saveImage([
-            'filename'    => $filename,
-            'title'       => $title,
-            'author'      => $author,
-            'uploaded_at' => new MongoDB\BSON\UTCDateTime(),
-            'public'      => true
+            'filename'              => $filename,
+            'title'                 => trim($title),
+            'user_id'               => $user['_id'],
+            'author_login'          => $user['login'],
+            'author_profile_photo'  => $user['profile_photo'] ?? null,
+            'uploaded_at'           => new MongoDB\BSON\UTCDateTime(),
+            'public'                => true
         ]);
 
         return true;
     }
 
-    private function createThumbnail(string $srcPath, string $destPath): void
+    private function createThumbnail(string $src, string $dest, string $mime): void
     {
-        $info = getimagesize($srcPath);
-        [$srcW, $srcH] = $info;
-
-        $src = $info['mime'] === 'image/png'
-            ? imagecreatefrompng($srcPath)
-            : imagecreatefromjpeg($srcPath);
+        $srcImg = $mime === 'image/png'
+            ? imagecreatefrompng($src)
+            : imagecreatefromjpeg($src);
 
         $thumbW = 200;
         $thumbH = 125;
@@ -95,17 +78,19 @@ class ImageService
 
         imagecopyresampled(
             $thumb,
-            $src,
+            $srcImg,
             0, 0, 0, 0,
-            $thumbW, $thumbH,
-            $srcW, $srcH
+            $thumbW,
+            $thumbH,
+            imagesx($srcImg),
+            imagesy($srcImg)
         );
 
-        $info['mime'] === 'image/png'
-            ? imagepng($thumb, $destPath)
-            : imagejpeg($thumb, $destPath, 85);
+        $mime === 'image/png'
+            ? imagepng($thumb, $dest)
+            : imagejpeg($thumb, $dest, 85);
 
-        imagedestroy($src);
+        imagedestroy($srcImg);
         imagedestroy($thumb);
     }
 }

@@ -11,7 +11,6 @@
 
 <div class="max-w-6xl mx-auto px-6 py-10">
 
-    <!-- HEADER -->
     <header class="mb-10 text-center">
         <h1 class="text-4xl font-bold tracking-tight mb-2">
             Galeria zdjęć
@@ -27,7 +26,6 @@
         </div>
     </header>
 
-    <!-- STATUS UŻYTKOWNIKA -->
     <div class="mb-8 text-center">
         <?php if ($user): ?>
             <div class="inline-block bg-white border rounded-xl px-6 py-4 shadow-sm">
@@ -55,7 +53,6 @@
         <?php endif; ?>
     </div>
 
-    <!-- UPLOAD -->
     <section class="bg-white rounded-2xl shadow-sm border p-6 mb-10">
         <h2 class="text-xl font-semibold mb-4">
             Dodaj nowe zdjęcie
@@ -83,6 +80,18 @@
                            file:rounded-lg file:border-0
                            file:bg-slate-200 hover:file:bg-slate-300"
                 >
+                <div class="flex-1">
+                    <label class="block text-sm font-medium mb-1">
+                        Tytuł zdjęcia
+                    </label>
+                    <input
+                        type="text"
+                        name="title"
+                        required
+                        placeholder="Np. Zachód słońca"
+                        class="block w-full border rounded-lg px-3 py-2 text-sm"
+                    >
+                </div>
             </div>
 
             <button
@@ -94,7 +103,6 @@
         </form>
     </section>
 
-    <!-- GALERIA + CAT 2C -->
     <form method="post">
         <section class="bg-white rounded-2xl shadow-sm border p-6">
             <h2 class="text-xl font-semibold mb-6">
@@ -110,7 +118,11 @@
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
 
                     <?php foreach ($files as $image): ?>
-                        <?php $filename = $image['filename']; ?>
+                        <?php
+                            $filename = $image['filename'];
+                            $author   = $image['author_login'] ?? 'nieznany';
+                            $avatar   = $image['author_profile_photo'] ?? null;
+                        ?>
 
                         <div class="border rounded-xl p-3 bg-white shadow-sm">
 
@@ -120,7 +132,20 @@
                                 alt="Miniatura"
                             >
 
-                            <div class="text-sm truncate mb-2">
+                            <div class="flex items-center gap-2 mb-2 text-sm">
+                                <?php if ($avatar): ?>
+                                    <img
+                                        src="/profiles/<?= htmlspecialchars($avatar) ?>"
+                                        class="w-6 h-6 rounded-full border"
+                                        alt="Autor"
+                                    >
+                                <?php endif; ?>
+                                <span class="font-medium">
+                                    <?= htmlspecialchars($author) ?>
+                                </span>
+                            </div>
+
+                            <div class="text-xs text-slate-500 truncate mb-2">
                                 <?= htmlspecialchars($filename) ?>
                             </div>
 
@@ -160,7 +185,6 @@
         </section>
     </form>
 
-    <!-- PAGINACJA -->
     <?php if ($pages > 1): ?>
         <nav class="flex justify-center mt-10 gap-2">
             <?php for ($i = 1; $i <= $pages; $i++): ?>

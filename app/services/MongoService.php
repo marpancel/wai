@@ -17,6 +17,24 @@ class MongoService
     }
 
 
+    public function getUserById(string $id)
+    {
+        return $this->users->findOne([
+            '_id' => new MongoDB\BSON\ObjectId($id)
+        ]);
+    }
+
+    public function findUserByLogin(string $login)
+    {
+        return $this->users->findOne(['login' => $login]);
+    }
+
+    public function saveUser(array $data): void
+    {
+        $this->users->insertOne($data);
+    }
+
+
     public function saveImage(array $data): void
     {
         $this->images->insertOne($data);
@@ -29,38 +47,20 @@ class MongoService
 
     public function getImages(int $limit, int $skip): array
     {
-        return $this->images->find(
-            ['public' => true],
+        return $this->images->aggregate([
+            ['$match' => ['public' => true]],
+            ['$sort'  => ['uploaded_at' => -1]],
+            ['$skip'  => $skip],
+            ['$limit' => $limit],
             [
-                'sort'  => ['uploaded_at' => -1],
-                'limit' => $limit,
-                'skip'  => $skip
-            ]
-        )->toArray();
-    }
-
-    public function getImageById(string $id)
-    {
-        return $this->images->findOne([
-            '_id' => new MongoDB\BSON\ObjectId($id)
-        ]);
-    }
-
-
-    public function findUserByLogin(string $login)
-    {
-        return $this->users->findOne(['login' => $login]);
-    }
-
-    public function saveUser(array $data): void
-    {
-        $this->users->insertOne($data);
-    }
-
-    public function getUserById(string $id)
-    {
-        return $this->users->findOne([
-            '_id' => new MongoDB\BSON\ObjectId($id)
-        ]);
+                '$lookup' => [
+                    'from'         => 'users',
+                    'localField'   => 'user_id',
+                    'foreignField'=> '_id',
+                    'as'           => 'author'
+                ]
+            ],
+            ['$unwind' => '$author']
+        ])->toArray();
     }
 }
