@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <title>Galeria zdjęć</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 
@@ -12,15 +11,20 @@
 
 <div class="max-w-6xl mx-auto px-6 py-10">
 
-    <!-- Header -->
     <header class="mb-10 text-center">
         <h1 class="text-4xl font-bold tracking-tight mb-2">
             Galeria zdjęć
         </h1>
-        <?php require __DIR__ . '/partials/cart.php'; ?>
+
+        <div class="mt-2 text-sm text-slate-600">
+            Zapamiętane: <strong><?= count($savedImages ?? []) ?></strong>
+            |
+            <a href="/?route=saved" class="text-blue-600 hover:underline">
+                Przejdź do zapamiętanych
+            </a>
+        </div>
     </header>
 
-    <!-- Status użytkownika + koszyk -->
     <div class="mb-8 text-center">
         <?php if ($user): ?>
             <div class="inline-block bg-white border rounded-xl px-6 py-4 shadow-sm">
@@ -37,7 +41,7 @@
 
                 <div class="mt-2 flex justify-center gap-4 text-sm">
                     <a href="/?route=saved" class="text-blue-600 hover:underline">
-                        Zapamiętane (<?= count($_SESSION['saved'] ?? []) ?>)
+                        Zapamiętane (<?= count($savedImages ?? []) ?>)
                     </a>
                     <a href="/?route=logout" class="text-red-600 hover:underline">
                         Wyloguj
@@ -47,7 +51,6 @@
         <?php endif; ?>
     </div>
 
-    <!-- Upload zdjęcia -->
     <section class="bg-white rounded-2xl shadow-sm border p-6 mb-10">
         <h2 class="text-xl font-semibold mb-4">
             Dodaj nowe zdjęcie
@@ -79,13 +82,13 @@
 
             <button
                 type="submit"
+                name="upload"
                 class="px-6 py-2 rounded-lg bg-green-600 text-white font-semibold hover:bg-green-700 transition">
                 Wyślij
             </button>
         </form>
     </section>
 
-    <!-- GALERIA + SESJA (CAT 2C) -->
     <form method="post">
         <section class="bg-white rounded-2xl shadow-sm border p-6">
             <h2 class="text-xl font-semibold mb-6">
@@ -116,7 +119,7 @@
                                     <input
                                         type="checkbox"
                                         name="images[<?= htmlspecialchars($file) ?>][checked]"
-                                        <?= isset($_SESSION['saved'][$file]) ? 'checked' : '' ?>
+                                        <?= isset($savedImages[$file]) ? 'checked' : '' ?>
                                     >
                                     Zapamiętaj
                                 </label>
@@ -124,7 +127,7 @@
                                 <input
                                     type="number"
                                     name="images[<?= htmlspecialchars($file) ?>][qty]"
-                                    value="<?= $_SESSION['saved'][$file] ?? 1 ?>"
+                                    value="<?= $savedImages[$file]['qty'] ?? 1 ?>"
                                     min="1"
                                     class="w-16 border rounded px-2 py-1 text-center"
                                 >
@@ -137,8 +140,7 @@
                     <button
                         type="submit"
                         name="save_selected"
-                        class="px-6 py-2 rounded-lg bg-blue-600 text-white font-semibold hover:bg-blue-700 transition"
-                    >
+                        class="px-6 py-2 rounded-lg bg-blue-600 text-white font-semibold hover:bg-blue-700 transition">
                         Zapamiętaj wybrane
                     </button>
                 </div>
@@ -147,7 +149,6 @@
         </section>
     </form>
 
-    <!-- Paginacja -->
     <?php if ($pages > 1): ?>
         <nav class="flex justify-center mt-10 gap-2">
             <?php for ($i = 1; $i <= $pages; $i++): ?>
