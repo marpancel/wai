@@ -21,18 +21,24 @@ class GalleryController
 
         $error = null;
 
+        // =======================
+        // UPLOAD ZDJĘCIA (CAT I)
+        // =======================
         if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['upload'])) {
             $service = new ImageService();
-            $result  = $service->upload($_FILES['image']);
+            $result  = $service->upload($_FILES['image'], $_POST);
 
             if ($result !== true) {
                 $error = $result;
             }
         }
 
+        // =======================
+        // ZAPAMIĘTYWANIE (CAT 2C)
+        // =======================
         if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_selected'])) {
 
-            // celowo nadpisujemy – wymaganie z zadania
+            // wymaganie z polecenia – nadpisujemy całość
             $_SESSION['saved_images'] = [];
 
             if (!empty($_POST['images'])) {
@@ -49,25 +55,17 @@ class GalleryController
             }
         }
 
+        // =======================
+        // PAGINACJA + MONGODB
+        // =======================
         $perPage = 6;
         $page    = max(1, (int)($_GET['page'] ?? 1));
-        $offset = ($page - 1) * $perPage;
+        $skip    = ($page - 1) * $perPage;
 
-        $thumbsDir = __DIR__ . '/../../public/thumbs';
-        $files = [];
-
-        if (is_dir($thumbsDir)) {
-            $files = array_values(array_filter(
-                scandir($thumbsDir),
-                fn($f) => preg_match('/\.(jpg|jpeg|png)$/i', $f)
-            ));
-            rsort($files);
-        }
-
-        $total = count($files);
+        $total = $mongo->countImages();
         $pages = max(1, ceil($total / $perPage));
-        $files = array_slice($files, $offset, $perPage);
 
+        $files = $mongo->getImages($perPage, $skip);
         $savedImages = $_SESSION['saved_images'];
 
         require __DIR__ . '/../views/gallery.php';

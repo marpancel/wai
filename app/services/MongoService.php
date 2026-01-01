@@ -16,9 +16,34 @@ class MongoService
         $this->users  = $db->users;
     }
 
+
     public function saveImage(array $data): void
     {
         $this->images->insertOne($data);
+    }
+
+    public function countImages(): int
+    {
+        return $this->images->countDocuments(['public' => true]);
+    }
+
+    public function getImages(int $limit, int $skip): array
+    {
+        return $this->images->find(
+            ['public' => true],
+            [
+                'sort'  => ['uploaded_at' => -1],
+                'limit' => $limit,
+                'skip'  => $skip
+            ]
+        )->toArray();
+    }
+
+    public function getImageById(string $id)
+    {
+        return $this->images->findOne([
+            '_id' => new MongoDB\BSON\ObjectId($id)
+        ]);
     }
 
 

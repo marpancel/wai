@@ -11,13 +11,15 @@
 
 <div class="max-w-6xl mx-auto px-6 py-10">
 
+    <!-- HEADER -->
     <header class="mb-10 text-center">
         <h1 class="text-4xl font-bold tracking-tight mb-2">
             Galeria zdjęć
         </h1>
 
         <div class="mt-2 text-sm text-slate-600">
-            Zapamiętane: <strong><?= count($savedImages ?? []) ?></strong>
+            Zapamiętane:
+            <strong><?= count($savedImages ?? []) ?></strong>
             |
             <a href="/?route=saved" class="text-blue-600 hover:underline">
                 Przejdź do zapamiętanych
@@ -25,6 +27,7 @@
         </div>
     </header>
 
+    <!-- STATUS UŻYTKOWNIKA -->
     <div class="mb-8 text-center">
         <?php if ($user): ?>
             <div class="inline-block bg-white border rounded-xl px-6 py-4 shadow-sm">
@@ -36,6 +39,7 @@
                         src="/profiles/<?= htmlspecialchars($user['profile_photo']) ?>"
                         width="80"
                         class="mx-auto mt-2 rounded-full border"
+                        alt="Profilowe"
                     >
                 <?php endif; ?>
 
@@ -51,6 +55,7 @@
         <?php endif; ?>
     </div>
 
+    <!-- UPLOAD -->
     <section class="bg-white rounded-2xl shadow-sm border p-6 mb-10">
         <h2 class="text-xl font-semibold mb-4">
             Dodaj nowe zdjęcie
@@ -67,7 +72,7 @@
 
             <div class="flex-1">
                 <label class="block text-sm font-medium mb-1">
-                    Plik (JPG / PNG, max 2 MB)
+                    Plik (JPG / PNG, max 1 MB)
                 </label>
                 <input
                     type="file"
@@ -89,6 +94,7 @@
         </form>
     </section>
 
+    <!-- GALERIA + CAT 2C -->
     <form method="post">
         <section class="bg-white rounded-2xl shadow-sm border p-6">
             <h2 class="text-xl font-semibold mb-6">
@@ -102,38 +108,43 @@
             <?php else: ?>
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <?php foreach ($files as $file): ?>
+
+                    <?php foreach ($files as $image): ?>
+                        <?php $filename = $image['filename']; ?>
+
                         <div class="border rounded-xl p-3 bg-white shadow-sm">
 
                             <img
-                                src="/thumbs/<?= htmlspecialchars($file) ?>"
+                                src="/thumbs/<?= htmlspecialchars($filename) ?>"
                                 class="w-full h-40 object-cover rounded-lg mb-3"
+                                alt="Miniatura"
                             >
 
                             <div class="text-sm truncate mb-2">
-                                <?= htmlspecialchars($file) ?>
+                                <?= htmlspecialchars($filename) ?>
                             </div>
 
                             <div class="flex items-center justify-between text-sm gap-2">
                                 <label class="flex items-center gap-2">
                                     <input
                                         type="checkbox"
-                                        name="images[<?= htmlspecialchars($file) ?>][checked]"
-                                        <?= isset($savedImages[$file]) ? 'checked' : '' ?>
+                                        name="images[<?= htmlspecialchars($filename) ?>][checked]"
+                                        <?= isset($savedImages[$filename]) ? 'checked' : '' ?>
                                     >
                                     Zapamiętaj
                                 </label>
 
                                 <input
                                     type="number"
-                                    name="images[<?= htmlspecialchars($file) ?>][qty]"
-                                    value="<?= $savedImages[$file]['qty'] ?? 1 ?>"
+                                    name="images[<?= htmlspecialchars($filename) ?>][qty]"
+                                    value="<?= $savedImages[$filename]['qty'] ?? 1 ?>"
                                     min="1"
                                     class="w-16 border rounded px-2 py-1 text-center"
                                 >
                             </div>
                         </div>
                     <?php endforeach; ?>
+
                 </div>
 
                 <div class="mt-6 text-center">
@@ -149,6 +160,7 @@
         </section>
     </form>
 
+    <!-- PAGINACJA -->
     <?php if ($pages > 1): ?>
         <nav class="flex justify-center mt-10 gap-2">
             <?php for ($i = 1; $i <= $pages; $i++): ?>

@@ -12,7 +12,14 @@
 <div class="max-w-5xl mx-auto px-6 py-10">
 
     <header class="mb-10 text-center">
-        <h1 class="text-4xl font-bold mb-2">Zapamiętane zdjęcia</h1>
+        <h1 class="text-4xl font-bold mb-2">
+            Zapamiętane zdjęcia
+        </h1>
+
+        <p class="text-sm text-slate-600 mb-2">
+            Liczba zapamiętanych: <strong><?= count($savedImages) ?></strong>
+        </p>
+
         <a href="/?route=gallery" class="text-blue-600 hover:underline">
             ← Wróć do galerii
         </a>
@@ -23,6 +30,7 @@
             Brak zapamiętanych zdjęć.
         </p>
     <?php else: ?>
+
         <form method="post">
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
 
@@ -32,16 +40,19 @@
                         <img
                             src="/thumbs/<?= htmlspecialchars($file) ?>"
                             class="w-full h-40 object-cover rounded-lg mb-3"
+                            alt="Miniatura"
                         >
 
                         <div class="flex justify-between items-center text-sm">
                             <label class="flex items-center gap-2">
-                                <input type="checkbox" name="remove[<?= htmlspecialchars($file) ?>]">
+                                <input type="checkbox"
+                                       name="remove[<?= htmlspecialchars($file) ?>]">
                                 Usuń
                             </label>
 
                             <span class="text-slate-600">
-                                Ilość: <strong><?= (int)$data['qty'] ?></strong>
+                                Ilość:
+                                <strong><?= (int)$data['qty'] ?></strong>
                             </span>
                         </div>
                     </div>
@@ -53,13 +64,12 @@
                 <button
                     type="submit"
                     class="px-6 py-2 rounded-lg bg-red-600 text-white font-semibold
-                        hover:bg-red-700 transition"
-                    onclick="return confirm('Usunąć zaznaczone zdjęcia?')"
-                >
-                    Usuń zaznaczone z zapamiętanych
+                           hover:bg-red-700 transition">
+                    Usuń zaznaczone
                 </button>
             </div>
         </form>
+
     <?php endif; ?>
 
 </div>
