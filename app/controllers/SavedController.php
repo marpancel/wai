@@ -14,10 +14,18 @@ class SavedController
         }
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['remove'])) {
+
             foreach ($_POST['remove'] as $filename => $v) {
+
                 $safe = basename($filename);
-                unset($_SESSION['saved_images'][$safe]);
+
+                if (isset($_SESSION['saved_images'][$safe])) {
+                    unset($_SESSION['saved_images'][$safe]);
+                }
             }
+
+            header('Location: /?route=saved');
+            exit;
         }
 
         $savedImages = $_SESSION['saved_images'];

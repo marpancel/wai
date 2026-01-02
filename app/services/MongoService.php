@@ -63,4 +63,32 @@ class MongoService
             ['$unwind' => '$author']
         ])->toArray();
     }
+
+    public function getImagesWithAuthors(int $limit, int $skip): array
+    {
+        return $this->images->aggregate([
+            ['$match' => ['public' => true]],
+            ['$sort'  => ['uploaded_at' => -1]],
+            ['$skip'  => $skip],
+            ['$limit' => $limit],
+            [
+                '$lookup' => [
+                    'from'          => 'users',
+                    'localField'    => 'user_id',
+                    'foreignField' => '_id',
+                    'as'            => 'author'
+                ]
+            ],
+            ['$unwind' => '$author'],
+            [
+                '$project' => [
+                    'filename'               => 1,
+                    'title'                  => 1,
+                    'author_login'           => '$author.login',
+                    'author_profile_photo'   => '$author.profile_photo',
+                    'uploaded_at'            => 1
+                ]
+            ]
+        ])->toArray();
+    }
 }

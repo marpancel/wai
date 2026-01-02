@@ -11,6 +11,13 @@
 
 <div class="max-w-6xl mx-auto px-6 py-10">
 
+    <?php
+        $totalQty = 0;
+        foreach ($savedImages ?? [] as $item) {
+            $totalQty += (int)($item['qty'] ?? 0);
+        }
+    ?>
+
     <header class="mb-10 text-center">
         <h1 class="text-4xl font-bold tracking-tight mb-2">
             Galeria zdjęć
@@ -18,7 +25,7 @@
 
         <div class="mt-2 text-sm text-slate-600">
             Zapamiętane:
-            <strong><?= count($savedImages ?? []) ?></strong>
+            <strong><?= $totalQty ?></strong>
             |
             <a href="/?route=saved" class="text-blue-600 hover:underline">
                 Przejdź do zapamiętanych
@@ -43,7 +50,7 @@
 
                 <div class="mt-2 flex justify-center gap-4 text-sm">
                     <a href="/?route=saved" class="text-blue-600 hover:underline">
-                        Zapamiętane (<?= count($savedImages ?? []) ?>)
+                        Zapamiętane (<?= $totalQty ?>)
                     </a>
                     <a href="/?route=logout" class="text-red-600 hover:underline">
                         Wyloguj
@@ -53,6 +60,7 @@
         <?php endif; ?>
     </div>
 
+    <!-- UPLOAD -->
     <section class="bg-white rounded-2xl shadow-sm border p-6 mb-10">
         <h2 class="text-xl font-semibold mb-4">
             Dodaj nowe zdjęcie
@@ -80,18 +88,19 @@
                            file:rounded-lg file:border-0
                            file:bg-slate-200 hover:file:bg-slate-300"
                 >
-                <div class="flex-1">
-                    <label class="block text-sm font-medium mb-1">
-                        Tytuł zdjęcia
-                    </label>
-                    <input
-                        type="text"
-                        name="title"
-                        required
-                        placeholder="Np. Zachód słońca"
-                        class="block w-full border rounded-lg px-3 py-2 text-sm"
-                    >
-                </div>
+            </div>
+
+            <div class="flex-1">
+                <label class="block text-sm font-medium mb-1">
+                    Tytuł zdjęcia
+                </label>
+                <input
+                    type="text"
+                    name="title"
+                    required
+                    placeholder="Np. Zachód słońca"
+                    class="block w-full border rounded-lg px-3 py-2 text-sm"
+                >
             </div>
 
             <button
@@ -103,6 +112,7 @@
         </form>
     </section>
 
+    <!-- GALERIA -->
     <form method="post">
         <section class="bg-white rounded-2xl shadow-sm border p-6">
             <h2 class="text-xl font-semibold mb-6">
@@ -119,7 +129,9 @@
 
                     <?php foreach ($files as $image): ?>
                         <?php
+                            $imageId  = (string)$image['_id'];
                             $filename = $image['filename'];
+                            $title    = $image['title'] ?? '';
                             $author   = $image['author_login'] ?? 'nieznany';
                             $avatar   = $image['author_profile_photo'] ?? null;
                         ?>
@@ -132,7 +144,11 @@
                                 alt="Miniatura"
                             >
 
-                            <div class="flex items-center gap-2 mb-2 text-sm">
+                            <div class="text-sm font-semibold truncate mb-1">
+                                <?= htmlspecialchars($title) ?>
+                            </div>
+
+                            <div class="flex items-center gap-2 mb-2 text-sm text-slate-600">
                                 <?php if ($avatar): ?>
                                     <img
                                         src="/profiles/<?= htmlspecialchars($avatar) ?>"
@@ -140,29 +156,23 @@
                                         alt="Autor"
                                     >
                                 <?php endif; ?>
-                                <span class="font-medium">
-                                    <?= htmlspecialchars($author) ?>
-                                </span>
-                            </div>
-
-                            <div class="text-xs text-slate-500 truncate mb-2">
-                                <?= htmlspecialchars($filename) ?>
+                                <span><?= htmlspecialchars($author) ?></span>
                             </div>
 
                             <div class="flex items-center justify-between text-sm gap-2">
                                 <label class="flex items-center gap-2">
                                     <input
                                         type="checkbox"
-                                        name="images[<?= htmlspecialchars($filename) ?>][checked]"
-                                        <?= isset($savedImages[$filename]) ? 'checked' : '' ?>
+                                        name="images[<?= htmlspecialchars($imageId) ?>][checked]"
+                                        <?= isset($savedImages[$imageId]) ? 'checked' : '' ?>
                                     >
                                     Zapamiętaj
                                 </label>
 
                                 <input
                                     type="number"
-                                    name="images[<?= htmlspecialchars($filename) ?>][qty]"
-                                    value="<?= $savedImages[$filename]['qty'] ?? 1 ?>"
+                                    name="images[<?= htmlspecialchars($imageId) ?>][qty]"
+                                    value="<?= $savedImages[$imageId]['qty'] ?? 1 ?>"
                                     min="1"
                                     class="w-16 border rounded px-2 py-1 text-center"
                                 >
@@ -185,6 +195,7 @@
         </section>
     </form>
 
+    <!-- PAGINACJA -->
     <?php if ($pages > 1): ?>
         <nav class="flex justify-center mt-10 gap-2">
             <?php for ($i = 1; $i <= $pages; $i++): ?>
