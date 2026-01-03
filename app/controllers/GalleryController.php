@@ -15,11 +15,15 @@ class GalleryController
         $mongo = new MongoService();
         $user  = $mongo->getUserById($_SESSION['user_id']);
 
-        $_SESSION['saved_images'] ??= [];
+        if (!$user) {
+            session_destroy();
+            header('Location: /?route=login');
+            exit;
+        }
 
+        $_SESSION['saved_images'] ??= [];
         $error = null;
 
-        
         if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['upload'])) {
 
             $title = trim($_POST['title'] ?? '');
@@ -30,11 +34,8 @@ class GalleryController
                 $error = 'Plik zdjęcia jest wymagany';
             } else {
                 try {
-                    $mongo = new MongoService();
-                    $user  = $mongo->getUserById($_SESSION['user_id']);
-
                     $service = new ImageService();
-                    $result = $service->upload(
+                    $result  = $service->upload(
                         $_FILES['image'],
                         $user,
                         $title
@@ -43,38 +44,34 @@ class GalleryController
                     if ($result !== true) {
                         $error = $result;
                     }
+
                 } catch (Throwable $e) {
-                    #$error = 'Błąd serwera podczas zapisu zdjęcia';
-                    throw $e;
+                    $error = 'Błąd serwera podczas zapisu zdjęcia';
                 }
             }
         }
 
-        
         if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_selected'])) {
 
             $_SESSION['saved_images'] = [];
 
-            foreach ($_POST['images'] ?? [] as $filename => $data) {
+            foreach ($_POST['images'] ?? [] as $imageId => $data) {
                 if (isset($data['checked'])) {
-                    $_SESSION['saved_images'][$filename] = [
+                    $_SESSION['saved_images'][$imageId] = [
                         'qty' => max(1, (int)($data['qty'] ?? 1))
                     ];
                 }
             }
         }
 
-        
         $perPage = 6;
         $page    = max(1, (int)($_GET['page'] ?? 1));
         $skip    = ($page - 1) * $perPage;
 
-        
-        $total  = $mongo->countImages();
-        $pages  = max(1, ceil($total / $perPage));
+        $total = $mongo->countImages();
+        $pages = max(1, (int)ceil($total / $perPage));
 
-        $files  = $mongo->getImagesWithAuthors($perPage, $skip);
-
+        $files = $mongo->getImagesWithAuthors($perPage, $skip);
         $savedImages = $_SESSION['saved_images'];
 
         require __DIR__ . '/../views/gallery.php';

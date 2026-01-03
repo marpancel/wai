@@ -11,26 +11,12 @@
 
 <div class="max-w-6xl mx-auto px-6 py-10">
 
-    <?php
-        $totalQty = 0;
-        foreach ($savedImages ?? [] as $item) {
-            $totalQty += (int)($item['qty'] ?? 0);
-        }
-    ?>
-
     <header class="mb-10 text-center">
         <h1 class="text-4xl font-bold tracking-tight mb-2">
             Galeria zdjęć
         </h1>
 
-        <div class="mt-2 text-sm text-slate-600">
-            Zapamiętane:
-            <strong><?= $totalQty ?></strong>
-            |
-            <a href="/?route=saved" class="text-blue-600 hover:underline">
-                Przejdź do zapamiętanych
-            </a>
-        </div>
+        
     </header>
 
     <div class="mb-8 text-center">
@@ -47,20 +33,30 @@
                         alt="Profilowe"
                     >
                 <?php endif; ?>
+                <div class="mt-4 flex flex-col items-center gap-2 text-sm">
 
-                <div class="mt-2 flex justify-center gap-4 text-sm">
-                    <a href="/?route=saved" class="text-blue-600 hover:underline">
-                        Zapamiętane (<?= $totalQty ?>)
+                    <a href="/?route=saved"
+                    class="flex items-center gap-2 px-4 py-2 rounded-full
+                            border bg-white shadow-sm
+                            hover:bg-slate-100 transition">
+
+                        <?php require_once __DIR__ . '/partials/cart.php'; ?>
+
+                        <span class="font-medium">
+                            Zapamiętane
+                        </span>
                     </a>
-                    <a href="/?route=logout" class="text-red-600 hover:underline">
+
+                    <a href="/?route=logout"
+                    class="text-red-600 hover:underline text-xs">
                         Wyloguj
                     </a>
+
                 </div>
             </div>
         <?php endif; ?>
     </div>
 
-    <!-- UPLOAD -->
     <section class="bg-white rounded-2xl shadow-sm border p-6 mb-10">
         <h2 class="text-xl font-semibold mb-4">
             Dodaj nowe zdjęcie
@@ -112,7 +108,6 @@
         </form>
     </section>
 
-    <!-- GALERIA -->
     <form method="post">
         <section class="bg-white rounded-2xl shadow-sm border p-6">
             <h2 class="text-xl font-semibold mb-6">
@@ -138,11 +133,13 @@
 
                         <div class="border rounded-xl p-3 bg-white shadow-sm">
 
-                            <img
-                                src="/thumbs/<?= htmlspecialchars($filename) ?>"
-                                class="w-full h-40 object-cover rounded-lg mb-3"
-                                alt="Miniatura"
-                            >
+                            <a href="/images/<?= htmlspecialchars($filename) ?>" target="_blank">
+                                <img
+                                    src="/thumbs/<?= htmlspecialchars($filename) ?>"
+                                    class="w-full h-40 object-cover rounded-lg mb-3 cursor-pointer"
+                                    alt="Miniatura"
+                                >
+                            </a>
 
                             <div class="text-sm font-semibold truncate mb-1">
                                 <?= htmlspecialchars($title) ?>
@@ -195,7 +192,6 @@
         </section>
     </form>
 
-    <!-- PAGINACJA -->
     <?php if ($pages > 1): ?>
         <nav class="flex justify-center mt-10 gap-2">
             <?php for ($i = 1; $i <= $pages; $i++): ?>

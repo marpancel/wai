@@ -22,11 +22,7 @@ class ImageService
         $this->thumbDir  = $root . '/public/thumbs/';
     }
 
-    /**
-     * @param array $file  $_FILES['image']
-     * @param BSONDocument $user  dokument użytkownika z MongoDB
-     * @param string $title
-     */
+    
     public function upload(array $file, BSONDocument $user, string $title): bool|string
     {
         if (trim($title) === '') {
@@ -37,13 +33,19 @@ class ImageService
             return 'Błąd uploadu pliku';
         }
 
+        $errors = [];
+
         if ($file['size'] > $this->maxSize) {
-            return 'Plik jest za duży (max 1 MB)';
+            $errors[] = 'Plik jest za duży (max 1 MB)';
         }
 
         $info = getimagesize($file['tmp_name']);
         if (!$info || !in_array($info['mime'], $this->allowedMime, true)) {
-            return 'Nieprawidłowy format (JPG / PNG)';
+            $errors[] = 'Nieprawidłowy format (JPG / PNG)';
+        }
+
+        if (!empty($errors)) {
+            return implode(' | ', $errors);
         }
 
         $ext = $info['mime'] === 'image/png' ? 'png' : 'jpg';

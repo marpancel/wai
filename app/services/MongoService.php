@@ -20,7 +20,6 @@ class MongoService
         $this->users  = $db->users;
     }
 
-    /* ================= USERS ================= */
 
     public function getUserById(string $id)
     {
@@ -39,7 +38,6 @@ class MongoService
         $this->users->insertOne($data);
     }
 
-    /* ================= IMAGES ================= */
 
     public function saveImage(array $data): void
     {
@@ -51,9 +49,6 @@ class MongoService
         return $this->images->countDocuments(['public' => true]);
     }
 
-    /**
-     * Jedno zdjęcie po ID (dla saved)
-     */
     public function getImageById(string $id)
     {
         return $this->images->findOne([
@@ -61,9 +56,6 @@ class MongoService
         ]);
     }
 
-    /**
-     * Wiele zdjęć po ID (wydajnie – jedno zapytanie)
-     */
     public function getImagesByIds(array $ids): array
     {
         if (empty($ids)) {
@@ -80,9 +72,6 @@ class MongoService
             ->toArray();
     }
 
-    /**
-     * Galeria bez autorów (opcjonalne)
-     */
     public function getImages(int $limit, int $skip): array
     {
         return $this->images->aggregate([
@@ -93,9 +82,6 @@ class MongoService
         ])->toArray();
     }
 
-    /**
-     * Galeria z autorami (używane w gallery.php)
-     */
     public function getImagesWithAuthors(int $limit, int $skip): array
     {
         return $this->images->aggregate([
