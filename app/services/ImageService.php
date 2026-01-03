@@ -3,6 +3,9 @@
 require_once __DIR__ . '/../../vendor/autoload.php';
 require_once __DIR__ . '/MongoService.php';
 
+use MongoDB\Model\BSONDocument;
+use MongoDB\BSON\UTCDateTime;
+
 class ImageService
 {
     private string $uploadDir;
@@ -14,18 +17,23 @@ class ImageService
     public function __construct()
     {
         $root = realpath(__DIR__ . '/../../');
+
         $this->uploadDir = $root . '/public/images/';
         $this->thumbDir  = $root . '/public/thumbs/';
     }
 
-    
-    public function upload(array $file, array $user, string $title): bool|string
+    /**
+     * @param array $file  $_FILES['image']
+     * @param BSONDocument $user  dokument użytkownika z MongoDB
+     * @param string $title
+     */
+    public function upload(array $file, BSONDocument $user, string $title): bool|string
     {
         if (trim($title) === '') {
             return 'Tytuł zdjęcia jest wymagany';
         }
 
-        if ($file['error'] !== UPLOAD_ERR_OK) {
+        if (!isset($file['error']) || $file['error'] !== UPLOAD_ERR_OK) {
             return 'Błąd uploadu pliku';
         }
 
@@ -53,13 +61,13 @@ class ImageService
 
         $mongo = new MongoService();
         $mongo->saveImage([
-            'filename'              => $filename,
-            'title'                 => trim($title),
-            'user_id'               => $user['_id'],
-            'author_login'          => $user['login'],
-            'author_profile_photo'  => $user['profile_photo'] ?? null,
-            'uploaded_at'           => new MongoDB\BSON\UTCDateTime(),
-            'public'                => true
+            'filename'             => $filename,
+            'title'                => trim($title),
+            'user_id'              => $user['_id'],
+            'author_login'         => $user['login'],
+            'author_profile_photo' => $user['profile_photo'] ?? null,
+            'uploaded_at'          => new UTCDateTime(),
+            'public'               => true,
         ]);
 
         return true;
@@ -86,9 +94,11 @@ class ImageService
             imagesy($srcImg)
         );
 
-        $mime === 'image/png'
-            ? imagepng($thumb, $dest)
-            : imagejpeg($thumb, $dest, 85);
+        if ($mime === 'image/png') {
+            imagepng($thumb, $dest);
+        } else {
+            imagejpeg($thumb, $dest, 85);
+        }
 
         imagedestroy($srcImg);
         imagedestroy($thumb);

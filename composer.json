@@ -1,0 +1,6 @@
+{
+    "name": "root/dev",
+    "require": {
+        "mongodb/mongodb": "^2.0"
+    }
+}

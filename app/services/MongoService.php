@@ -2,25 +2,30 @@
 
 require_once __DIR__ . '/../../vendor/autoload.php';
 
+use MongoDB\Client;
+use MongoDB\Collection;
+use MongoDB\BSON\ObjectId;
+
 class MongoService
 {
-    private MongoDB\Collection $images;
-    private MongoDB\Collection $users;
+    private Collection $images;
+    private Collection $users;
 
     public function __construct()
     {
-        $client = new MongoDB\Client("mongodb://127.0.0.1:27017");
+        $client = new Client("mongodb://127.0.0.1:27017");
         $db = $client->wai;
 
         $this->images = $db->images;
         $this->users  = $db->users;
     }
 
+    /* ================= USERS ================= */
 
     public function getUserById(string $id)
     {
         return $this->users->findOne([
-            '_id' => new MongoDB\BSON\ObjectId($id)
+            '_id' => new ObjectId($id)
         ]);
     }
 
@@ -34,6 +39,7 @@ class MongoService
         $this->users->insertOne($data);
     }
 
+    /* ================= IMAGES ================= */
 
     public function saveImage(array $data): void
     {
@@ -45,6 +51,38 @@ class MongoService
         return $this->images->countDocuments(['public' => true]);
     }
 
+    /**
+     * Jedno zdjęcie po ID (dla saved)
+     */
+    public function getImageById(string $id)
+    {
+        return $this->images->findOne([
+            '_id' => new ObjectId($id)
+        ]);
+    }
+
+    /**
+     * Wiele zdjęć po ID (wydajnie – jedno zapytanie)
+     */
+    public function getImagesByIds(array $ids): array
+    {
+        if (empty($ids)) {
+            return [];
+        }
+
+        $objectIds = array_map(
+            fn ($id) => new ObjectId($id),
+            $ids
+        );
+
+        return $this->images
+            ->find(['_id' => ['$in' => $objectIds]])
+            ->toArray();
+    }
+
+    /**
+     * Galeria bez autorów (opcjonalne)
+     */
     public function getImages(int $limit, int $skip): array
     {
         return $this->images->aggregate([
@@ -52,18 +90,12 @@ class MongoService
             ['$sort'  => ['uploaded_at' => -1]],
             ['$skip'  => $skip],
             ['$limit' => $limit],
-            [
-                '$lookup' => [
-                    'from'         => 'users',
-                    'localField'   => 'user_id',
-                    'foreignField'=> '_id',
-                    'as'           => 'author'
-                ]
-            ],
-            ['$unwind' => '$author']
         ])->toArray();
     }
 
+    /**
+     * Galeria z autorami (używane w gallery.php)
+     */
     public function getImagesWithAuthors(int $limit, int $skip): array
     {
         return $this->images->aggregate([
@@ -82,11 +114,11 @@ class MongoService
             ['$unwind' => '$author'],
             [
                 '$project' => [
-                    'filename'               => 1,
-                    'title'                  => 1,
-                    'author_login'           => '$author.login',
-                    'author_profile_photo'   => '$author.profile_photo',
-                    'uploaded_at'            => 1
+                    'filename'             => 1,
+                    'title'                => 1,
+                    'author_login'         => '$author.login',
+                    'author_profile_photo' => '$author.profile_photo',
+                    'uploaded_at'          => 1
                 ]
             ]
         ])->toArray();

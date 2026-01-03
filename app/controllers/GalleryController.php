@@ -30,10 +30,13 @@ class GalleryController
                 $error = 'Plik zdjęcia jest wymagany';
             } else {
                 try {
+                    $mongo = new MongoService();
+                    $user  = $mongo->getUserById($_SESSION['user_id']);
+
                     $service = new ImageService();
                     $result = $service->upload(
                         $_FILES['image'],
-                        $_SESSION['user_id'], // STRING
+                        $user,
                         $title
                     );
 
@@ -41,7 +44,8 @@ class GalleryController
                         $error = $result;
                     }
                 } catch (Throwable $e) {
-                    $error = 'Błąd serwera podczas zapisu zdjęcia';
+                    #$error = 'Błąd serwera podczas zapisu zdjęcia';
+                    throw $e;
                 }
             }
         }
